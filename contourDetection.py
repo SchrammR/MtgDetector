@@ -1,5 +1,6 @@
 """
 https://www.youtube.com/watch?v=Fchzk1lDt7Q
+https://github.com/rmislam/PythonSIFT/blob/master/pysift.py
 """
 import sys
 import math
