@@ -1,16 +1,15 @@
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
+import pysift
 
 #read data
-img1 = cv.imread('images/capturedCard.png',cv.IMREAD_GRAYSCALE)                 # queryImage
-img2 = cv.imread('images/swiftwaterCliffs_highres.png',cv.IMREAD_GRAYSCALE)     # trainImage
+img1 = cv.imread('images/capturedCard.png', cv.IMREAD_GRAYSCALE)                 # queryImage
+img2 = cv.imread('images/cardReferences/swiftwaterCliffs.png', cv.IMREAD_GRAYSCALE)     # trainImage
 
-# Initiate SIFT detector
-sift = cv.xfeatures2d.SIFT_create()
 # find the keypoints and descriptors with SIFT
-kp1, des1 = sift.detectAndCompute(img1,None)
-kp2, des2 = sift.detectAndCompute(img2,None)
+kp1, des1 = pysift.computeKeypointsAndDescriptors(img1)
+kp2, des2 = pysift.computeKeypointsAndDescriptors(img2)
 # FLANN parameters
 FLANN_INDEX_KDTREE = 1
 index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)

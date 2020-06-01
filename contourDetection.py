@@ -2,10 +2,14 @@
 https://www.youtube.com/watch?v=Fchzk1lDt7Q
 https://github.com/rmislam/PythonSIFT/blob/master/pysift.py
 """
+import glob
 import sys
 import math
 import cv2 as cv
 import numpy as np
+import imageSearch
+from cv2 import detail_Estimator
+
 
 class boundingBox:
     def __init__(self, x, y, h, w):
@@ -67,18 +71,46 @@ def getContours(inputFrame, frameContour):              #gibt auch TREE       #g
 
 def clickEventMouseCoordinates(event, x, y, flags, params):
     if event == cv.EVENT_LBUTTONDOWN:
-        print(x, ", ", y)
+        #print(x, ", ", y)
         for box in boundingBoxes:
             if box.x < x < box.x + box.w and box.y < y < box.y + box.h:
-                print("Hit")
+                #print("Hit")
                 saveCard(frameCopy, box)
-
-
-
-cap = cv.VideoCapture(0)
 
 def empty(a):
     pass
+
+def saveCard(copy, rectangle:boundingBox):
+    additionalBorder = 4
+    card = copy[rectangle.y+additionalBorder:rectangle.y+rectangle.h+additionalBorder, rectangle.x+additionalBorder:rectangle.x+rectangle.w+additionalBorder]
+    #cv.imshow("card", card)
+    cv.imwrite("images/capturedCard.png", card)
+
+    imageSearch.searchImage(card)
+
+
+#Bag of words
+orb = cv.ORB_create()
+
+filenames = glob.glob("images/cardReferences/*")
+filenames.sort()
+bagOfImages = [cv.imread(img) for img in filenames]
+bagOfKeypoints = []
+bagOfDescriptors = []
+
+bagOfImages[5] = cv.blur(bagOfImages[5],(5,5))
+bagOfImages[5] = cv.resize(bagOfImages[5],(int(bagOfImages[5].shape[1]*20/100), int(bagOfImages[5].shape[0]*20/100)))
+
+
+for image in bagOfImages:
+    keypoints, descriptors = orb.detectAndCompute(image, None)
+    bagOfKeypoints.append(keypoints)
+    bagOfDescriptors.append(descriptors)
+
+tese = cv.drawKeypoints(bagOfImages[5], bagOfKeypoints[5], None)
+cv.imshow("Features", tese)
+
+cap = cv.VideoCapture(0)
 
 cv.namedWindow("Parameters")
 cv.resizeWindow("Parameters", 640, 240)
@@ -87,12 +119,7 @@ cv.createTrackbar("Threshold2", "Parameters", 72, 255, empty)
 cv.createTrackbar("MinArea", "Parameters", 4000, 50000, empty)
 cv.createTrackbar("MaxArea", "Parameters", 20000, 50000, empty)
 
-def saveCard(copy, rectangle:boundingBox):
-    card = copy[rectangle.y:rectangle.y+rectangle.h, rectangle.x:rectangle.x+rectangle.w]
-    cv.imshow("card", card)
-    cv.imwrite("images/capturedCard.png", card)
-
-
+#Main Loop
 while True:
     # Capture frame-by-frame
     success, frame = cap.read()
